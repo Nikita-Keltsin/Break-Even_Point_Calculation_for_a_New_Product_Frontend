@@ -1,0 +1,162 @@
+.costFilter {
+  background: #F7F9FC;
+  border-radius: 20px;
+  padding: 16px;
+}
+
+.costFilterHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: var(--brand);
+}
+
+.costFilterHead svg {
+  width: 20px;
+  height: 20px;
+}
+
+.costFilterHead b {
+  font-size: 16px;
+  color: #1F2937;
+}
+
+.costFilterReset {
+  margin-left: auto;
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 14px;
+  color: #9AA1AB;
+}
+
+.costFilterReset:hover {
+  color: var(--brand);
+}
+
+.costFilterSearch .input-group-text {
+  background: #FFFFFF;
+  border-color: #D5DAE1;
+  border-right: none;
+  border-radius: 12px 0 0 12px;
+  color: #9AA1AB;
+}
+
+.costFilterSearch .input-group-text svg {
+  width: 18px;
+  height: 18px;
+}
+
+.costFilterSearch .form-control {
+  border-color: #D5DAE1;
+  border-left: none;
+  border-radius: 0 12px 12px 0;
+  padding: 10px 12px 10px 0;
+  font-size: 14px;
+}
+
+.costFilterSearch .form-control:focus {
+  box-shadow: none;
+  border-color: #D5DAE1;
+}
+
+.costFilterSearch:focus-within {
+  border-radius: 12px;
+  box-shadow: 0 0 0 3px rgba(34, 133, 200, .2);
+}
+
+.costFilterKinds {
+  margin: 14px 0 8px;
+  font-size: 14px;
+}
+
+.costFilterKinds .form-check-label {
+  color: #6B7280;
+}
+
+.costFilterKinds .on .form-check-label {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.costFilterRangeLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #6B7280;
+}
+
+/* Двойной ползунок, как в шаблоне ЛР1: два input range поверх общей дорожки */
+.dualRange {
+  position: relative;
+  height: 34px;
+  margin: 4px 0 12px;
+}
+
+.dualRangeTrack,
+.dualRangeFill {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+}
+
+.dualRangeTrack {
+  left: 0;
+  right: 0;
+  background: #D5DAE1;
+}
+
+.dualRangeFill {
+  background: var(--brand);
+}
+
+.dualRange input[type='range'] {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  background: none;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.dualRange input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 3px solid var(--brand);
+  cursor: pointer;
+}
+
+.dualRange input[type='range']::-moz-range-thumb {
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 3px solid var(--brand);
+  cursor: pointer;
+}
+
+.dualRange input[type='range']::-moz-range-track {
+  background: none;
+}
+
+.costFilterApply.btn {
+  width: 100%;
+  border-radius: 14px;
+  padding: 12px;
+  font-weight: 700;
+}

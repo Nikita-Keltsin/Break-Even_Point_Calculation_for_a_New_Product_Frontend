@@ -1,0 +1,46 @@
+/* fixed-bottom из Bootstrap растягивает панель на всё окно — сужаем до колонки телефона */
+.appNavbar.fixed-bottom {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--app-width);
+  height: var(--nav-height);
+  padding: 0 8px;
+  background: #F7F9FC;
+  border-top: 1px solid #E4E8EE;
+}
+
+.appNav {
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.appNav .appNavTab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 18px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6B7280;
+  transition: background-color .15s, color .15s;
+}
+
+.appNav .appNavTab svg {
+  width: 22px;
+  height: 22px;
+}
+
+.appNav .appNavTab:hover {
+  color: var(--brand);
+}
+
+.appNav .appNavTab.active {
+  background: var(--brand);
+  color: #FFFFFF;
+  font-weight: 600;
+}

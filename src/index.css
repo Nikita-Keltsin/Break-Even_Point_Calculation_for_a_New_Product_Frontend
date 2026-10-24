@@ -1,0 +1,91 @@
+/* Палитра и шрифт — как в шаблонах ЛР1 (Break-Even_Point_Calculation_for_a_New_Product.css) */
+:root {
+  --app-width: 390px;
+  --nav-height: 76px;
+  --brand: #2285C8;
+  --brand-dark: #1B6FA8;
+
+  --bs-body-font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --bs-body-color: #1F2937;
+  --bs-primary: #2285C8;
+  --bs-primary-rgb: 34, 133, 200;
+  --bs-link-color: #2285C8;
+  --bs-link-color-rgb: 34, 133, 200;
+  --bs-link-hover-color: #1B6FA8;
+}
+
+body {
+  margin: 0;
+  background: #E3E6EB;
+}
+
+.btn-primary {
+  --bs-btn-bg: #2285C8;
+  --bs-btn-border-color: #2285C8;
+  --bs-btn-hover-bg: #1B6FA8;
+  --bs-btn-hover-border-color: #1B6FA8;
+  --bs-btn-active-bg: #175E8F;
+  --bs-btn-active-border-color: #175E8F;
+  --bs-btn-disabled-bg: #2285C8;
+  --bs-btn-disabled-border-color: #2285C8;
+  --bs-btn-focus-shadow-rgb: 34, 133, 200;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: #2285C8;
+  --bs-btn-border-color: #2285C8;
+  --bs-btn-hover-bg: #2285C8;
+  --bs-btn-hover-border-color: #2285C8;
+  --bs-btn-active-bg: #1B6FA8;
+  --bs-btn-active-border-color: #1B6FA8;
+  --bs-btn-focus-shadow-rgb: 34, 133, 200;
+}
+
+.form-check-input:checked {
+  background-color: #2285C8;
+  border-color: #2285C8;
+}
+
+.form-check-input:focus {
+  box-shadow: 0 0 0 .2rem rgba(34, 133, 200, .25);
+}
+
+/* Мобильный макет: колонка ширины телефона по центру окна, без адаптива под другие экраны */
+.appShell {
+  max-width: var(--app-width);
+  min-height: 100vh;
+  margin: 0 auto;
+  background: #EDF0F5;
+  box-shadow: 0 0 24px rgba(0, 0, 0, .12);
+}
+
+.appContent {
+  padding-bottom: var(--nav-height);
+}
+
+/* Общая шапка светлых страниц */
+.pageHeader {
+  padding: 18px 16px 12px;
+}
+
+.pageHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.pageTitle {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: #1F2937;
+}
+
+.pageLoader {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+  color: var(--brand);
+}
