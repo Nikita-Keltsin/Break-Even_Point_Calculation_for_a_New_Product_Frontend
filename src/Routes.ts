@@ -1,14 +1,21 @@
-// Константы маршрутов и подписи для navbar и breadcrumbs
+// Константы маршрутов и подписи для navbar и breadcrumbs.
+// В ЛР5 работают только две страницы — плитка видов затрат и лента.
+// «Добавление» и «Войти» уже есть в меню, но пока неактивны (появятся в следующих ЛР).
 export const ROUTES = {
-  HOME: '/',
-  COSTS: '/cost-types',
   FEED: '/feed',
+  ADDITION: '/addition',
+  COSTS: '/cost-types',
+  LOGIN: '/login',
 } as const
 
 export type RouteKeyType = keyof typeof ROUTES
 
 export const ROUTE_LABELS: { [key in RouteKeyType]: string } = {
-  HOME: 'Главная',
-  COSTS: 'Виды затрат',
   FEED: 'Лента',
+  ADDITION: 'Добавление',
+  COSTS: 'Виды затрат',
+  LOGIN: 'Войти',
 }
+
+// Пункты меню, которые гость в ЛР5 открыть не может
+export const DISABLED_ROUTES: RouteKeyType[] = ['ADDITION', 'LOGIN']

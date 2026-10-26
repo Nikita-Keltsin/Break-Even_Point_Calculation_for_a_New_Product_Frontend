@@ -8,7 +8,7 @@ import { getFeedCost } from '../../modules/costsApi'
 import { DEFAULT_IMAGE, DEFAULT_VIDEO } from '../../modules/media'
 import { formatAmount, kindLabel } from '../../modules/format'
 import type { Cost } from '../../modules/types'
-import { ROUTES, ROUTE_LABELS } from '../../Routes'
+import { ROUTES } from '../../Routes'
 
 // Лента — подробная карточка вида затрат во весь экран, как feed.html из ЛР1.
 // /feed — первая опубликованная карточка, /feed/:id — карточка по id.
@@ -76,10 +76,7 @@ export const FeedPage: FC = () => {
     // Несуществующий или удалённый вид затрат — просматривать нельзя
     return (
       <div className="feedPage feedCenter feedEmpty">
-        <div className="feedTop"><Breadcrumbs variant="dark" crumbs={[
-          { label: ROUTE_LABELS.COSTS, path: ROUTES.COSTS },
-          { label: 'Не найдено' },
-        ]} /></div>
+        <div className="feedTop"><Breadcrumbs variant="dark" crumbs={[{ label: 'Не найдено' }]} /></div>
         <p>Вид затрат не найден или удалён</p>
         <Button variant="light" onClick={() => navigate(ROUTES.COSTS)}>К видам затрат</Button>
       </div>
@@ -103,7 +100,7 @@ export const FeedPage: FC = () => {
       <div className="feedTop">
         <Breadcrumbs
           variant="dark"
-          crumbs={[{ label: ROUTE_LABELS.COSTS, path: ROUTES.COSTS }, { label: cost.cost_name }]}
+          crumbs={[{ label: cost.cost_name }]}
         />
       </div>
 

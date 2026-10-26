@@ -6,7 +6,7 @@
   width: 100%;
   max-width: var(--app-width);
   height: var(--nav-height);
-  padding: 0 8px;
+  padding: 0 6px;
   background: #F7F9FC;
   border-top: 1px solid #E4E8EE;
 }
@@ -17,12 +17,18 @@
   justify-content: space-around;
 }
 
+.appNavTabWrap {
+  display: inline-flex;
+  cursor: not-allowed;
+}
+
 .appNav .appNavTab {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 8px 18px;
+  min-width: 80px;
+  padding: 8px 6px;
   border-radius: 16px;
   font-size: 12px;
   font-weight: 500;
@@ -43,4 +49,10 @@
   background: var(--brand);
   color: #FFFFFF;
   font-weight: 600;
+}
+
+/* Неактивные пункты меню: Добавление и Войти */
+.appNav .appNavTab.disabled {
+  color: #C2C7CF;
+  pointer-events: none;
 }

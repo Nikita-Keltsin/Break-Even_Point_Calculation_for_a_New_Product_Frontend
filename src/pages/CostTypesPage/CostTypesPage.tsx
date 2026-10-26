@@ -10,7 +10,7 @@ import { CostFilter } from '../../components/CostFilter/CostFilter'
 import { getCosts } from '../../modules/costsApi'
 import { filtersFromParams, filtersToParams } from '../../modules/filters'
 import type { Cost, CostFilters } from '../../modules/types'
-import { ROUTES, ROUTE_LABELS } from '../../Routes'
+import { ROUTES } from '../../Routes'
 
 // Гость черновиков не имеет; после авторизации здесь будет число из GET /api/costs/draft
 const GUEST_DRAFT_COUNT = 0
@@ -50,7 +50,7 @@ export const CostTypesPage: FC = () => {
   return (
     <div className="costTypesPage">
       <header className="pageHeader">
-        <Breadcrumbs crumbs={[{ label: ROUTE_LABELS.COSTS }]} />
+        <Breadcrumbs crumbs={[]} />
         <div className="pageHeaderRow">
           <h1 className="pageTitle">Виды затрат</h1>
           <CartIcon count={GUEST_DRAFT_COUNT} disabled />

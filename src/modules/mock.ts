@@ -5,9 +5,10 @@ import { mockAsset } from './media'
 // Данные взяты из migrations/002_seed.sql (только опубликованные: удалённые и черновики
 // веб-сервис гостю не отдаёт) и дополнены двумя записями для демонстрации фильтров.
 //
+// Без БД и S3: обложки лежат в public/mock и отдаются самим фронтендом.
 // Изображение по умолчанию демонстрируют две записи:
-//   id 5 — поле image_url пустое            -> сразу DEFAULT_IMAGE;
-//   id 7 — image_url указывает на несуществующий файл в MinIO -> onError -> DEFAULT_IMAGE.
+//   id 5 — поле image_url пустое                    -> сразу DEFAULT_IMAGE;
+//   id 7 — image_url указывает на несуществующий файл -> onError -> DEFAULT_IMAGE.
 // video_url у mock пустой, поэтому в ленте играет видео по умолчанию.
 export const COSTS_MOCK: Cost[] = [
   {
@@ -118,7 +119,7 @@ export const COSTS_MOCK: Cost[] = [
     creator_id: 3,
     created_at: '2026-09-10T10:00:00Z',
     formed_at: '2026-09-10T12:00:00Z',
-    image_url: 'http://localhost:9000/media/acquiring.png', // файла нет -> onError -> по умолчанию
+    image_url: mockAsset('acquiring.png'), // такого файла нет -> onError -> по умолчанию
     video_url: '',
     likes_count: 4,
     is_mine: false,

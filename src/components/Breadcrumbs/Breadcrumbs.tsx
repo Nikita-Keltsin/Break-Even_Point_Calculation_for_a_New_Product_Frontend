@@ -9,14 +9,14 @@ export interface Crumb {
 }
 
 interface Props {
-  crumbs: Crumb[] // путь ПОСЛЕ главной страницы; «Главная» добавляется всегда первой
+  crumbs: Crumb[] // путь ПОСЛЕ базовой страницы; «Виды затрат» добавляется всегда первой
   variant?: 'light' | 'dark' // dark — светлый текст поверх видео в ленте
 }
 
-// Самописная навигационная цепочка: путь от базовой страницы к текущей.
+// Самописная навигационная цепочка: путь от базовой страницы (плитка «Виды затрат») к текущей.
 // Все пункты, кроме последнего, — ссылки Link; последний — текущая страница (aria-current).
 export const Breadcrumbs: FC<Props> = ({ crumbs, variant = 'light' }) => {
-  const items: Crumb[] = [{ label: ROUTE_LABELS.HOME, path: ROUTES.HOME }, ...crumbs]
+  const items: Crumb[] = [{ label: ROUTE_LABELS.COSTS, path: ROUTES.COSTS }, ...crumbs]
 
   return (
     <nav aria-label="Навигационная цепочка" className={`crumbs crumbs-${variant}`}>
