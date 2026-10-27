@@ -51,7 +51,7 @@
   font-weight: 600;
 }
 
-/* Неактивные пункты меню: Добавление и Войти */
+/* Неактивные пункты меню: Добавление и Вход */
 .appNav .appNavTab.disabled {
   color: #C2C7CF;
   pointer-events: none;

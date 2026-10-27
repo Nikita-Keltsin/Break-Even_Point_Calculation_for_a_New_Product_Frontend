@@ -5,7 +5,7 @@ import { NavLink } from 'react-router-dom'
 import { DISABLED_ROUTES, ROUTES, ROUTE_LABELS } from '../../Routes'
 import type { RouteKeyType } from '../../Routes'
 
-// Иконки — те же, что в нижней панели шаблонов ЛР1, плюс «Войти»
+// Иконки — те же, что в нижней панели шаблонов ЛР1, плюс «Вход»
 const ICONS: Record<RouteKeyType, ReactNode> = {
   FEED: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -37,13 +37,13 @@ const ICONS: Record<RouteKeyType, ReactNode> = {
   ),
 }
 
-// Порядок пунктов меню, как в ЛР1, и «Войти» справа
+// Порядок пунктов меню, как в ЛР1, и «Вход» справа
 const TABS: RouteKeyType[] = ['FEED', 'ADDITION', 'COSTS', 'LOGIN']
 
 export const AppNavbar: FC = () => (
   // Navbar из React-Bootstrap, закреплён снизу узкой колонки — как таб-панель мобильного приложения.
   // Активные пункты — NavLink роутера: переход без перезагрузки, класс active ставится по адресу.
-  // Неактивные пункты (Добавление, Войти) рендерятся с disabled и подсказкой.
+  // Неактивные пункты (Добавление, Вход) рендерятся с disabled и подсказкой.
   <Navbar fixed="bottom" className="appNavbar">
     <Nav className="appNav">
       {TABS.map((key) =>
