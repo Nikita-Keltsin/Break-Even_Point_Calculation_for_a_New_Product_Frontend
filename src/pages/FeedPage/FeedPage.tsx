@@ -1,43 +1,40 @@
 import './FeedPage.css'
 import { useEffect, useState } from 'react'
 import type { FC } from 'react'
-import { Button, Spinner } from 'react-bootstrap'
+import { Button } from 'react-bootstrap'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs'
-import { getFeedCost } from '../../modules/costsApi'
+import { StatusBanner } from '../../components/StatusBanner/StatusBanner'
 import { DEFAULT_IMAGE, DEFAULT_VIDEO } from '../../modules/media'
 import { formatAmount, kindLabel } from '../../modules/format'
-import type { Cost } from '../../modules/types'
 import { ROUTES } from '../../Routes'
+import { fetchFeedCost, likeCost } from '../../store/costsSlice'
+import { useAppDispatch, useAppSelector } from '../../store/hooks'
+
+// Описание длиннее этого значения не помещается в две строки — появляется кнопка «Ещё»
+const SHORT_TEXT_LENGTH = 80
 
 // Лента — подробная карточка вида затрат во весь экран, как feed.html из ЛР1.
 // /feed — первая опубликованная карточка, /feed/:id — карточка по id.
 export const FeedPage: FC = () => {
   const { id } = useParams() // параметр :id из адреса (строка или undefined)
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const isAuth = useAppSelector((state) => state.user.isAuth)
+  const cost = useAppSelector((state) => state.costs.feedCost)
+  const feedStatus = useAppSelector((state) => state.costs.feedStatus)
 
-  const [cost, setCost] = useState<Cost | null>(null)
-  const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState(false) // «Ещё» / «Свернуть»
-  const [videoSrc, setVideoSrc] = useState(DEFAULT_VIDEO)
+  const [failedVideo, setFailedVideo] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
-  // При каждом изменении id в адресе загружаем нужную карточку
+  // При каждом изменении id в адресе загружаем нужную карточку.
+  // При входе и выходе тоже: от авторизации зависит is_liked.
   useEffect(() => {
-    let cancelled = false
-    setLoading(true)
     setExpanded(false)
-    getFeedCost(id === undefined ? undefined : Number(id)).then((data) => {
-      if (cancelled) return
-      setCost(data)
-      // Видео по умолчанию: пустое поле -> сразу DEFAULT_VIDEO, битая ссылка -> onError ниже
-      setVideoSrc(data?.video_url || DEFAULT_VIDEO)
-      setLoading(false)
-    })
-    return () => {
-      cancelled = true // ушли на другую карточку раньше, чем пришёл ответ
-    }
-  }, [id])
+    const request = dispatch(fetchFeedCost({ id: id === undefined ? undefined : Number(id) }))
+    return () => request.abort() // ушли на другую карточку раньше, чем пришёл ответ
+  }, [dispatch, id, isAuth])
 
   // Надпись «Ссылка скопирована» сама исчезает; таймер очищается при размонтировании
   useEffect(() => {
@@ -46,11 +43,15 @@ export const FeedPage: FC = () => {
     return () => clearTimeout(timer)
   }, [copied])
 
-  // «Далее» — как GET /api/costs/feed/:id?next=true: следующая карточка, в конце ленты — первая
+  // «Далее» — следующая карточка, в конце ленты первая
   const handleNext = async () => {
     if (!cost) return
-    const next = await getFeedCost(cost.id, true)
-    if (next) navigate(`${ROUTES.FEED}/${next.id}`)
+    const result = await dispatch(fetchFeedCost({ id: cost.id, next: true })).unwrap().catch(() => null)
+    if (result?.cost) navigate(`${ROUTES.FEED}/${result.cost.id}`)
+  }
+
+  const handleLike = () => {
+    if (cost) dispatch(likeCost({ id: cost.id, like: !cost.is_liked }))
   }
 
   const handleShare = async () => {
@@ -64,24 +65,27 @@ export const FeedPage: FC = () => {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="feedPage feedCenter">
-        <Spinner animation="border" variant="light" />
-      </div>
-    )
-  }
-
-  if (!cost) {
+  if (feedStatus === 'ready' && !cost) {
     // Несуществующий или удалённый вид затрат — просматривать нельзя
     return (
       <div className="feedPage feedCenter feedEmpty">
-        <div className="feedTop"><Breadcrumbs variant="dark" crumbs={[{ label: 'Не найдено' }]} /></div>
+        <div className="feedTop">
+          <Breadcrumbs variant="dark" crumbs={[{ label: 'Не найдено' }]} />
+          <StatusBanner />
+        </div>
         <p>Вид затрат не найден или удалён</p>
         <Button variant="light" onClick={() => navigate(ROUTES.COSTS)}>К видам затрат</Button>
       </div>
     )
   }
+
+  // Пока не пришла карточка из адреса, старую не показываем: экран закрывает анимация загрузки
+  if (!cost || (id !== undefined && cost.id !== Number(id))) {
+    return <div className="feedPage" />
+  }
+
+  // Видео по умолчанию: поле video_url пустое или файл недоступен (браузер вызвал onError)
+  const videoSrc = cost.video_url && cost.video_url !== failedVideo ? cost.video_url : DEFAULT_VIDEO
 
   return (
     <div className="feedPage">
@@ -90,7 +94,7 @@ export const FeedPage: FC = () => {
         className="feedVideo"
         src={videoSrc}
         poster={cost.image_url || DEFAULT_IMAGE}
-        onError={() => setVideoSrc(DEFAULT_VIDEO)}
+        onError={() => setFailedVideo(videoSrc)}
         autoPlay
         loop
         muted
@@ -102,13 +106,15 @@ export const FeedPage: FC = () => {
           variant="dark"
           crumbs={[{ label: cost.cost_name }]}
         />
+        <StatusBanner />
       </div>
 
       <div className="feedActions">
-        {/* Гость лайк не ставит — только видит количество (лайк доступен после авторизации) */}
+        {/* Гость лайк не ставит — только видит количество */}
         <div className="feedAction">
-          <button type="button" className={`feedRound ${cost.is_liked ? 'liked' : ''}`} disabled
-            title="Лайк доступен после входа" aria-label="Лайк">
+          <button type="button" className={`feedRound ${cost.is_liked ? 'liked' : ''}`} disabled={!isAuth}
+            onClick={handleLike} title={isAuth ? undefined : 'Лайк доступен после входа'} aria-label="Лайк"
+            aria-pressed={cost.is_liked}>
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20s-7-4.5-9-9c-1.2-2.8.6-6 3.8-6 2 0 3.4 1.2 5.2 3.4C13.8 6.2 15.2 5 17.2 5c3.2 0 5 3.2 3.8 6-2 4.5-9 9-9 9z" /></svg>
           </button>
           <span className="feedRoundLabel">{cost.likes_count}</span>
@@ -129,17 +135,15 @@ export const FeedPage: FC = () => {
 
       <div className="feedOverlay">
         <h1 className="feedTitle">{cost.cost_name}</h1>
-        <p className={`feedDesc ${expanded ? 'full' : ''}`}>
-          {expanded ? cost.full_description || cost.short_description : cost.short_description}
-        </p>
-        {cost.full_description && (
+        <p className={`feedDesc ${expanded ? 'full' : ''}`}>{cost.short_description}</p>
+        {cost.short_description.length > SHORT_TEXT_LENGTH && (
           <button type="button" className="feedMore" onClick={() => setExpanded((value) => !value)}>
             {expanded ? 'Свернуть' : 'Ещё'}
           </button>
         )}
         <div className="feedChips">
           <div className="feedChip"><span>СУММА</span><b>{formatAmount(cost.amount_monthly)}/мес</b></div>
-          <div className="feedChip"><span>ВИД ЗАТРАТ</span><b>{kindLabel(cost.cost_kind)}</b></div>
+          <div className="feedChip"><span>ВИД ЗАТРАТ</span><b>{kindLabel(cost.is_fixed)}</b></div>
         </div>
       </div>
     </div>

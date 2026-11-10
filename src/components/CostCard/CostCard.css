@@ -82,3 +82,8 @@
   font-weight: 700;
   color: var(--brand);
 }
+
+.costCardDelete.btn {
+  border-radius: 10px;
+  font-weight: 600;
+}

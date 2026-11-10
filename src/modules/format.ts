@@ -10,4 +10,11 @@ export const KIND_LABELS: Record<CostKind, string> = {
   variable: 'Переменные',
 }
 
-export const kindLabel = (kind: CostKind | null) => (kind ? KIND_LABELS[kind] : '—')
+// is_fixed равен null, пока вид затрат не опубликован
+export const kindOf = (isFixed: boolean | null): CostKind | null =>
+  isFixed === null ? null : isFixed ? 'fixed' : 'variable'
+
+export const kindLabel = (isFixed: boolean | null) => {
+  const kind = kindOf(isFixed)
+  return kind ? KIND_LABELS[kind] : '—'
+}

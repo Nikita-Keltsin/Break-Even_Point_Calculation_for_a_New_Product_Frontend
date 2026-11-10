@@ -1,0 +1,17 @@
+.loadingOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brand);
+  background: rgba(237, 240, 245, .55);
+  /* Клики блокируются сразу, а быстрые запросы не успевают мигнуть на экране */
+  animation: loadingOverlayIn .15s .1s both;
+}
+
+@keyframes loadingOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

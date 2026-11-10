@@ -63,9 +63,21 @@
   color: #D7DBE0;
 }
 
+/* Свёрнутое описание — две строки, остальное открывает кнопка «Ещё» */
+.feedDesc:not(.full) {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .feedDesc.full {
   max-height: 34vh;
   overflow-y: auto;
+}
+
+.feedTop .statusBanner {
+  margin-top: 10px;
 }
 
 .feedMore {

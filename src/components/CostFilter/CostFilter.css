@@ -35,39 +35,8 @@
   color: var(--brand);
 }
 
-.costFilterSearch .input-group-text {
-  background: #FFFFFF;
-  border-color: #D5DAE1;
-  border-right: none;
-  border-radius: 12px 0 0 12px;
-  color: #9AA1AB;
-}
-
-.costFilterSearch .input-group-text svg {
-  width: 18px;
-  height: 18px;
-}
-
-.costFilterSearch .form-control {
-  border-color: #D5DAE1;
-  border-left: none;
-  border-radius: 0 12px 12px 0;
-  padding: 10px 12px 10px 0;
-  font-size: 14px;
-}
-
-.costFilterSearch .form-control:focus {
-  box-shadow: none;
-  border-color: #D5DAE1;
-}
-
-.costFilterSearch:focus-within {
-  border-radius: 12px;
-  box-shadow: 0 0 0 3px rgba(34, 133, 200, .2);
-}
-
 .costFilterKinds {
-  margin: 14px 0 8px;
+  margin: 0 0 8px;
   font-size: 14px;
 }
 
