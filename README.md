@@ -95,19 +95,23 @@ go run ./cmd/Break-Even_Point_Calculation_for_a_New_Product   # http://localhost
 
 ## Обращения к веб-сервису
 
-**Услуги** — thunk (`src/store/costsSlice.ts`) и клиент Axios, сгенерированный из Swagger (`src/api/Api.ts`):
+Фронтенд использует **9 запросов** к веб-сервису, и **все они идут через axios**: 7 запросов к услугам и вход/выход. Регистрация в ЛР6 не делается: метод `POST /api/users/register` есть в бэкенде и в сгенерированном `Api.ts`, но фронтенд его не вызывает. `fetch` в проекте не используется.
 
-| Thunk | Сгенерированный метод | Запрос |
-|---|---|---|
-| `fetchCosts` | `api.api.breakevenPointList` | `GET /api/breakeven_point` |
-| `fetchFeedCost` | `api.api.breakevenPointFeedList` | `GET /api/breakeven_point/feed` |
-| `fetchDraft` | `api.api.breakevenPointDraftList` | `GET /api/breakeven_point/draft` |
-| `createCost` | `api.api.breakevenPointCreate` | `POST /api/breakeven_point` |
-| `publishCost` | `api.api.breakevenPointPublishUpdate` | `PUT /api/breakeven_point/:id/publish` |
-| `deleteCost` | `api.api.breakevenPointDelete` | `DELETE /api/breakeven_point/:id` |
-| `likeCost` | `api.api.breakevenPointLikeCreate` | `POST /api/breakeven_point/:id/like` |
+| № | Запрос | Где вызывается | Как |
+|---|---|---|---|
+| 1 | `POST /api/users/login` | `LoginPage` | `axios.post` прямо в компоненте |
+| 2 | `POST /api/users/logout` | `AppNavbar` | `axios.post` прямо в компоненте |
+| 3 | `GET /api/breakeven_point` | thunk `fetchCosts` | `api.api.breakevenPointList` |
+| 4 | `GET /api/breakeven_point/feed` | thunk `fetchFeedCost` | `api.api.breakevenPointFeedList` |
+| 5 | `GET /api/breakeven_point/draft` | thunk `fetchDraft` | `api.api.breakevenPointDraftList` |
+| 6 | `POST /api/breakeven_point` | thunk `createCost` | `api.api.breakevenPointCreate` |
+| 7 | `PUT /api/breakeven_point/:id/publish` | thunk `publishCost` | `api.api.breakevenPointPublishUpdate` |
+| 8 | `DELETE /api/breakeven_point/:id` | thunk `deleteCost` | `api.api.breakevenPointDelete` |
+| 9 | `POST /api/breakeven_point/:id/like` | thunk `likeCost` | `api.api.breakevenPointLikeCreate` |
 
-**Вход и выход** — только axios, без кодогенерации и thunk, прямо в компонентах: `axios.post('/api/users/login')` в `LoginPage`, `axios.post('/api/users/logout')` в `AppNavbar`. Результат передаётся в Redux вручную (`setUser`, `clearUser`). `src/modules/authApi.ts` только хранит JWT.
+**Услуги (3–9)** — thunk в `src/store/costsSlice.ts` вызывают методы клиента, сгенерированного из Swagger (`src/api/Api.ts`, `swagger-typescript-api --axios`). Этот клиент сам построен на axios: `axios.create(...)` и `instance.request(...)`.
+
+**Вход и выход (1–2)** — axios без кодогенерации и thunk, прямо в компонентах. Результат передаётся в Redux вручную (`setUser`, `clearUser`). `src/modules/authApi.ts` только хранит JWT.
 
 **Прокси** (`vite.config.ts`) решает ограничение CORS: браузер обращается только к `:3000`.
 
