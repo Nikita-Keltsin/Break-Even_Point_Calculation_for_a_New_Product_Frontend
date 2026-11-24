@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice, isPending, isRejected, isFulfilled } from '@reduxjs/toolkit'
 import axios from 'axios'
 import { api } from '../api'
-import { loadCatalog, loadFeed } from '../api/lab8'
+import { loadCatalog, loadFeed, uploadDraft } from '../api/lab8'
 import { forgetToken } from '../modules/authApi'
 import { getMockCosts, getMockFeedCost } from '../modules/mock'
 import { toCost } from '../modules/toCost'
@@ -126,16 +126,15 @@ export const fetchDraft = createCostsThunk<Cost | null, void>('costs/fetchDraft'
   }
 })
 
-// POST /api/breakeven_point — создание черновика с фото и видео (multipart/form-data)
-export const createCost = createCostsThunk<Cost, { name: string; image: File | null; video: File | null }>(
+// POST /api/breakeven_point — создание черновика с фото и GLB (multipart/form-data)
+export const createCost = createCostsThunk<Cost, { name: string; image: File | null; model: File | null }>(
   'costs/createCost',
-  async ({ name, image, video }, thunkApi) => {
+  async ({ name, image, model }, thunkApi) => {
     try {
-      // Пустые файлы в объект не кладём: генератор записал бы их в форму строкой "undefined"
-      const { data } = await api.api.breakevenPointCreate({
+      const { data } = await uploadDraft({
         name,
         ...(image ? { image } : {}),
-        ...(video ? { video } : {}),
+        ...(model ? { model } : {}),
       })
       return toCost(data)
     } catch (error) {
@@ -144,7 +143,7 @@ export const createCost = createCostsThunk<Cost, { name: string; image: File | n
   },
 )
 
-// PUT /api/breakeven_point/:id/publish — публикация черновика
+
 export const publishCost = createCostsThunk<
   Cost,
   { id: number; short_description: string; amount_monthly: number; is_fixed: boolean }

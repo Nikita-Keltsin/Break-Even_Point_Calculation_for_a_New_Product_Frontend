@@ -11,3 +11,13 @@
   border-radius: 12px;
   background: #EDF1F5;
 }
+
+.additionModel {
+  position: relative;
+  min-height: 220px;
+  height: 220px;
+  display: grid;
+  place-items: center;
+  background: #243648;
+  border-radius: 10px;
+}

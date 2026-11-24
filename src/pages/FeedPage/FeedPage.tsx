@@ -1,15 +1,17 @@
 import './FeedPage.css'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import type { FC } from 'react'
 import { Button } from 'react-bootstrap'
 import { useNavigate, useParams, useLocation, useSearchParams } from 'react-router-dom'
 import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs'
 import { StatusBanner } from '../../components/StatusBanner/StatusBanner'
-import { DEFAULT_IMAGE, DEFAULT_VIDEO } from '../../modules/media'
+import { useRotation } from './useRotation'
 import { formatAmount, kindLabel } from '../../modules/format'
 import { ROUTES } from '../../Routes'
 import { fetchFeedCost, likeCost } from '../../store/costsSlice'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
+
+const ModelViewer = lazy(() => import('../../components/ModelViewer/ModelViewer'))
 
 // Описание длиннее этого значения не помещается в две строки — появляется кнопка «Ещё»
 const SHORT_TEXT_LENGTH = 80
@@ -20,21 +22,24 @@ export const FeedPage: FC = () => {
   const { id } = useParams() // параметр :id из адреса (строка или undefined)
   const navigate = useNavigate()
   const [search] = useSearchParams()
-  const next = search.get('next') === 'true'
   const { key: navigation } = useLocation()
+  const next = search.get('next') === 'true'
   const dispatch = useAppDispatch()
   const isAuth = useAppSelector((state) => state.user.isAuth)
   const cost = useAppSelector((state) => state.costs.feedCost)
   const feedStatus = useAppSelector((state) => state.costs.feedStatus)
 
-  const [expanded, setExpanded] = useState(false) // «Ещё» / «Свернуть»
-  const [failedVideo, setFailedVideo] = useState<string | null>(null)
+  const [expandedAt, setExpandedAt] = useState<string>()
+  const expanded = expandedAt === navigation
   const [copied, setCopied] = useState(false)
+
+  const { angles, timedOut } = useRotation(navigation, cost?.id, cost?.rotation_version, next && cost?.rotation_scheduled)
+  const x = angles?.x ?? cost?.angle_x ?? 0
+  const y = angles?.y ?? cost?.angle_y ?? 0
 
   // При каждом изменении id в адресе загружаем нужную карточку.
   // При входе и выходе тоже: от авторизации зависит is_liked.
   useEffect(() => {
-    setExpanded(false)
     const request = dispatch(fetchFeedCost({ id: id === undefined ? undefined : Number(id), next }))
     return () => request.abort() // ушли на другую карточку раньше, чем пришёл ответ
   }, [dispatch, id, isAuth, navigation, next])
@@ -81,26 +86,15 @@ export const FeedPage: FC = () => {
   }
 
   // Пока не пришла карточка из адреса, старую не показываем: экран закрывает анимация загрузки
-  if (!cost || (!next && id !== undefined && cost.id !== Number(id))) {
+  if (!cost || feedStatus === 'loading' || (!next && id !== undefined && cost.id !== Number(id))) {
     return <div className="feedPage" />
   }
 
-  // Видео по умолчанию: поле video_url пустое или файл недоступен (браузер вызвал onError)
-  const videoSrc = cost.video_url && cost.video_url !== failedVideo ? cost.video_url : DEFAULT_VIDEO
-
   return (
     <div className="feedPage">
-      <video
-        key={cost.id}
-        className="feedVideo"
-        src={videoSrc}
-        poster={cost.image_url || DEFAULT_IMAGE}
-        onError={() => setFailedVideo(videoSrc)}
-        autoPlay
-        loop
-        muted
-        playsInline
-      />
+      <Suspense fallback={<div className="feedModel" role="status">Загрузка 3D-модели…</div>}>
+        <ModelViewer key={cost.id} url={cost.model_url} x={x} y={y} className="feedModel" />
+      </Suspense>
 
       <div className="feedTop">
         <Breadcrumbs
@@ -108,7 +102,13 @@ export const FeedPage: FC = () => {
           crumbs={[{ label: cost.cost_name }]}
         />
         <StatusBanner />
-        {!!cost.position && <p className="feedBatchPosition">Карточка {cost.position} из {cost.batch_size}</p>}
+        <p className="feedPosition" aria-live="polite">
+          {cost.position ? `Карточка ${cost.position} из ${cost.batch_size} · ` : ''}
+          X {x}° · Y {y}°
+          {next && cost.rotation_scheduled && !angles && !timedOut ? ' · Ожидается поворот' : ''}
+          {timedOut ? ' · Поворот ещё не получен' : ''}
+          {next && cost.rotation_scheduled === false ? ' · Сервис поворота недоступен' : ''}
+        </p>
       </div>
 
       <div className="feedActions">
@@ -139,7 +139,7 @@ export const FeedPage: FC = () => {
         <h1 className="feedTitle">{cost.cost_name}</h1>
         <p className={`feedDesc ${expanded ? 'full' : ''}`}>{cost.short_description}</p>
         {cost.short_description.length > SHORT_TEXT_LENGTH && (
-          <button type="button" className="feedMore" onClick={() => setExpanded((value) => !value)}>
+          <button type="button" className="feedMore" onClick={() => setExpandedAt(expanded ? undefined : navigation)}>
             {expanded ? 'Свернуть' : 'Ещё'}
           </button>
         )}

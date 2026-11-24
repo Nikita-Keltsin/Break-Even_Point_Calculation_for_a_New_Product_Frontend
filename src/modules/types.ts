@@ -6,6 +6,11 @@ export interface Cost {
   short_description: string
   image_url: string
   video_url: string
+  model_url?: string
+  angle_x?: number
+  angle_y?: number
+  rotation_version?: number
+  rotation_scheduled?: boolean
   position?: number
   batch_size?: number
   amount_monthly: number | null

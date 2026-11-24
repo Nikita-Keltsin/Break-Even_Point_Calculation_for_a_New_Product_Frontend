@@ -1,60 +1,54 @@
 import './AdditionPage.css'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import type { ChangeEvent, FC, FormEvent } from 'react'
 import { Button, Form } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs'
 import { StatusBanner } from '../../components/StatusBanner/StatusBanner'
-import { DEFAULT_IMAGE, DEFAULT_VIDEO } from '../../modules/media'
+import { DEFAULT_IMAGE } from '../../modules/media'
 import type { Cost } from '../../modules/types'
 import { ROUTES, ROUTE_LABELS } from '../../Routes'
 import { createCost, fetchDraft, publishCost } from '../../store/costsSlice'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 
+const ModelViewer = lazy(() => import('../../components/ModelViewer/ModelViewer'))
+
 // Временная ссылка на выбранный файл для предпросмотра
-const useObjectUrl = (file: File | null) => {
-  const [url, setUrl] = useState('')
-
-  useEffect(() => {
-    if (!file) {
-      setUrl('')
-      return
-    }
-    const objectUrl = URL.createObjectURL(file)
-    setUrl(objectUrl)
-    return () => URL.revokeObjectURL(objectUrl)
-  }, [file])
-
-  return url
+const useFilePreview = () => {
+  const [selection, setSelection] = useState<{ file: File; url: string }>()
+  const url = selection?.url
+  useEffect(() => () => { if (url) URL.revokeObjectURL(url) }, [url])
+  const pick = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    setSelection(file ? { file, url: URL.createObjectURL(file) } : undefined)
+  }
+  return { file: selection?.file ?? null, url, pick }
 }
-
-const pickFile = (event: ChangeEvent<HTMLInputElement>) => event.target.files?.[0] ?? null
 
 // Шаг 1: название, фото и видео -> создаётся черновик
 const NewCostForm: FC = () => {
   const dispatch = useAppDispatch()
   const [name, setName] = useState('')
-  const [image, setImage] = useState<File | null>(null)
-  const [video, setVideo] = useState<File | null>(null)
-  const imageUrl = useObjectUrl(image)
-  const videoUrl = useObjectUrl(video)
+  const image = useFilePreview()
+  const model = useFilePreview()
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
-    dispatch(createCost({ name, image, video }))
+    dispatch(createCost({ name, image: image.file, model: model.file }))
   }
 
   return (
     <Form className="formCard" onSubmit={handleSubmit}>
       <Form.Group controlId="cost-image">
         <Form.Label>Фото</Form.Label>
-        <Form.Control type="file" accept="image/*" onChange={(event: ChangeEvent<HTMLInputElement>) => setImage(pickFile(event))} />
-        {imageUrl && <img className="additionPreview" src={imageUrl} alt="Предпросмотр фото" />}
+        <Form.Control type="file" accept="image/*" onChange={image.pick} />
+        {image.url && <img className="additionPreview" src={image.url} alt="Предпросмотр фото" />}
       </Form.Group>
-      <Form.Group controlId="cost-video">
-        <Form.Label>Видео</Form.Label>
-        <Form.Control type="file" accept="video/*" onChange={(event: ChangeEvent<HTMLInputElement>) => setVideo(pickFile(event))} />
-        {videoUrl && <video className="additionPreview" src={videoUrl} muted loop playsInline autoPlay />}
+      <Form.Group controlId="cost-model">
+        <Form.Label>3D-модель (.glb)</Form.Label>
+        <Form.Control type="file" accept=".glb,model/gltf-binary" onChange={model.pick} />
+        {model.url && <Suspense fallback="Загрузка модели…"><ModelViewer key={model.url} className="additionModel" url={model.url} /></Suspense>}
+        <Form.Text>GLB версии 2, до 20 МиБ. Без файла будет показана стандартная модель.</Form.Text>
       </Form.Group>
       <Form.Group controlId="cost-name">
         <Form.Label>Название вида затрат</Form.Label>
@@ -78,7 +72,6 @@ const DraftForm: FC<{ draft: Cost }> = ({ draft }) => {
   const [amount, setAmount] = useState(draft.amount_monthly?.toString() ?? '')
   const [isFixed, setIsFixed] = useState(draft.is_fixed ?? false)
   const [imageFailed, setImageFailed] = useState(false)
-  const [videoFailed, setVideoFailed] = useState(false)
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -103,15 +96,9 @@ const DraftForm: FC<{ draft: Cost }> = ({ draft }) => {
         alt="Фото черновика"
         onError={() => setImageFailed(true)}
       />
-      <video
-        className="additionPreview"
-        src={draft.video_url && !videoFailed ? draft.video_url : DEFAULT_VIDEO}
-        onError={() => setVideoFailed(true)}
-        muted
-        loop
-        playsInline
-        autoPlay
-      />
+      <Suspense fallback="Загрузка модели…">
+        <ModelViewer className="additionModel" url={draft.model_url} x={draft.angle_x} y={draft.angle_y} />
+      </Suspense>
       <Form.Group controlId="draft-name">
         <Form.Label>Название вида затрат</Form.Label>
         <Form.Control readOnly value={draft.cost_name} />

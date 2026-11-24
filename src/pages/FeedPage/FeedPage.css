@@ -173,4 +173,29 @@
   text-align: center;
 }
 
-.feedBatchPosition { color: white; text-shadow: 0 1px 3px black; }
+.feedModel {
+  position: absolute;
+  inset: 62px 0 145px;
+  background: radial-gradient(ellipse at center, #314964, #14161a 75%);
+  display: grid;
+  place-items: center;
+}
+.feedModel canvas, .additionModel canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.modelMessage {
+  position: absolute;
+  bottom: 8px;
+  padding: 4px 8px;
+  background: #192330;
+  color: #fff;
+  border-radius: 4px;
+}
+.feedPosition {
+  font-variant-numeric: tabular-nums;
+  margin: 8px 0 0;
+  color: #d7ecff;
+  font-size: .85rem;
+}

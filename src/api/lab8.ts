@@ -1,4 +1,5 @@
 import { api } from '.'
+import { ContentType } from './Api'
 import type { ApiBreakEvenPointJSON, ApiBreakEvenPointListJSON } from './Api'
 
 export type CostResponse = ApiBreakEvenPointJSON & {
@@ -33,3 +34,6 @@ export const prepareFeed = (signal: AbortSignal) =>
 
 export const loadFeed = (id: number | undefined, next: boolean | undefined, signal: AbortSignal) =>
   api.request<CostResponse>({ path: `${base}/feed`, method: 'GET', query: { id, next }, headers, signal })
+
+export const uploadDraft = (body: { name: string; image?: File; model?: File }) =>
+  api.request<CostResponse>({ path: base, method: 'POST', type: ContentType.FormData, body })
