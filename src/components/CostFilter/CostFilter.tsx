@@ -3,7 +3,7 @@ import type { FC, FormEvent } from 'react'
 import { Button, Form } from 'react-bootstrap'
 import type { CostFilters, CostKind } from '../../modules/types'
 import { AMOUNT_MAX, AMOUNT_MIN, AMOUNT_STEP } from '../../modules/types'
-import { formatAmount, KIND_LABELS } from '../../modules/format'
+import { KIND_LABELS } from '../../modules/format'
 
 interface Props {
   value: CostFilters // значения полей фильтра (живут в Redux)
@@ -65,8 +65,8 @@ export const CostFilter: FC<Props> = ({ value, onChange, onApply, onReset, loadi
       </div>
 
       <div className="costFilterRangeLabels">
-        <span>От: {formatAmount(value.minAmount)}</span>
-        <span>До: {formatAmount(value.maxAmount)}</span>
+        <label>Сумма от, ₽<input type="number" min={AMOUNT_MIN} max={value.maxAmount} value={value.minAmount} onChange={(e) => setMin(Math.max(AMOUNT_MIN, Number(e.target.value)))} /></label>
+        <label>Сумма до, ₽<input type="number" min={value.minAmount} max={AMOUNT_MAX} value={value.maxAmount} onChange={(e) => setMax(Math.min(AMOUNT_MAX, Number(e.target.value)))} /></label>
       </div>
       <div className="dualRange">
         <span className="dualRangeTrack" />
@@ -76,7 +76,7 @@ export const CostFilter: FC<Props> = ({ value, onChange, onApply, onReset, loadi
         />
         <input
           type="range"
-          aria-label="Сумма от"
+          aria-label="Ползунок минимальной суммы"
           min={AMOUNT_MIN}
           max={AMOUNT_MAX}
           step={AMOUNT_STEP}
@@ -85,7 +85,7 @@ export const CostFilter: FC<Props> = ({ value, onChange, onApply, onReset, loadi
         />
         <input
           type="range"
-          aria-label="Сумма до"
+          aria-label="Ползунок максимальной суммы"
           min={AMOUNT_MIN}
           max={AMOUNT_MAX}
           step={AMOUNT_STEP}

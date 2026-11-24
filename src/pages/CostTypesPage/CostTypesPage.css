@@ -17,3 +17,12 @@
   font-size: 14px;
   padding: 30px 0;
 }
+
+.catalogPagination {
+  margin: 24px 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}

@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, isPending, isRejected, isFulfilled } from '@reduxjs/toolkit'
 import axios from 'axios'
 import { api } from '../api'
+import { loadCatalog, loadFeed } from '../api/lab8'
 import { forgetToken } from '../modules/authApi'
 import { getMockCosts, getMockFeedCost } from '../modules/mock'
 import { toCost } from '../modules/toCost'
@@ -10,6 +11,7 @@ import type { AppDispatch, RootState } from './index'
 import { clearUser } from './userSlice'
 
 interface CostsState {
+  total: number
   list: Cost[] // плитка
   listStatus: 'loading' | 'ready'
   feedCost: Cost | null // карточка ленты, null — не найдена
@@ -21,6 +23,7 @@ interface CostsState {
 }
 
 const initialState: CostsState = {
+  total: 0,
   list: [],
   listStatus: 'loading',
   feedCost: null,
@@ -75,23 +78,25 @@ const toCostsQuery = ({ kinds, minAmount, maxAmount }: CostFilters) => ({
 // ===== Thunk: обращения к домену услуг через код, сгенерированный из Swagger (api.api.*) =====
 
 // GET /api/breakeven_point — плитка с фильтром из Redux. Гость без сервиса получает mock.
-export const fetchCosts = createCostsThunk<{ costs: Cost[]; usingMock: boolean }, void>(
+export const PAGE_SIZE = 24
+
+export const fetchCosts = createCostsThunk<{ costs: Cost[]; total: number; usingMock: boolean }, { page: number; filter: CostFilters }>(
   'costs/fetchCosts',
-  async (_, thunkApi) => {
-    const { filters, user } = thunkApi.getState()
+  async ({ page, filter }, thunkApi) => {
+    const { user } = thunkApi.getState()
     try {
-      const { data } = await api.api.breakevenPointList(toCostsQuery(filters), { signal: thunkApi.signal })
-      return { costs: data.map(toCost), usingMock: false }
+      const { data } = await loadCatalog({ ...toCostsQuery(filter), page, page_size: PAGE_SIZE }, thunkApi.signal)
+      return { costs: data.items.map(toCost), total: data.total, usingMock: false }
     } catch (error) {
       if (!user.isAuth && isServiceUnavailable(error)) {
-        return { costs: getMockCosts(filters), usingMock: true }
+        const costs = getMockCosts(filter)
+        return { costs: costs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), total: costs.length, usingMock: true }
       }
       return failWith(error, thunkApi)
     }
   },
 )
 
-// GET /api/breakeven_point/feed — одна карточка ленты. 404 — карточки нет, это не ошибка.
 export const fetchFeedCost = createCostsThunk<
   { cost: Cost | null; usingMock: boolean },
   { id?: number; next?: boolean }
@@ -99,7 +104,7 @@ export const fetchFeedCost = createCostsThunk<
   // Адрес вроде /feed/abc: бэкенд принял бы его за «первую карточку»
   if (id !== undefined && !(id > 0)) return { cost: null, usingMock: false }
   try {
-    const { data } = await api.api.breakevenPointFeedList({ id, next }, { signal: thunkApi.signal })
+    const { data } = await loadFeed(id, next, thunkApi.signal)
     return { cost: toCost(data), usingMock: false }
   } catch (error) {
     if (isNotFound(error)) return { cost: null, usingMock: false }
@@ -188,12 +193,14 @@ const costsSlice = createSlice({
       })
       .addCase(fetchCosts.fulfilled, (state, action) => {
         state.list = action.payload.costs
+        state.total = action.payload.total
         state.usingMock = action.payload.usingMock
         state.listStatus = 'ready'
       })
       .addCase(fetchCosts.rejected, (state, action) => {
         if (action.meta.aborted) return // запрос устарел: фильтр изменился или страницу закрыли
         state.list = []
+        state.total = 0
         state.listStatus = 'ready'
       })
       .addCase(fetchFeedCost.pending, (state) => {

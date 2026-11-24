@@ -1,17 +1,17 @@
 import './CostTypesPage.css'
-import { useCallback, useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import type { FC } from 'react'
-import { Col, Row } from 'react-bootstrap'
+import { Button, Col, Row } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs'
 import { CartIcon } from '../../components/CartIcon/CartIcon'
 import { CostCard } from '../../components/CostCard/CostCard'
 import { CostFilter } from '../../components/CostFilter/CostFilter'
 import { StatusBanner } from '../../components/StatusBanner/StatusBanner'
-import type { CostFilters } from '../../modules/types'
+import { DEFAULT_FILTERS, type CostFilters } from '../../modules/types'
 import { ROUTES } from '../../Routes'
 import { selectIsBusy } from '../../store'
-import { deleteCost, fetchCosts, fetchDraft } from '../../store/costsSlice'
+import { deleteCost, fetchCosts, fetchDraft, PAGE_SIZE } from '../../store/costsSlice'
 import { resetFilters, setFilters } from '../../store/filtersSlice'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 
@@ -21,23 +21,17 @@ export const CostTypesPage: FC = () => {
   const dispatch = useAppDispatch()
   const filters = useAppSelector((state) => state.filters)
   const isAuth = useAppSelector((state) => state.user.isAuth)
-  const { list: costs, listStatus, draft, error } = useAppSelector((state) => state.costs)
+  const { list: costs, total, listStatus, draft, error } = useAppSelector((state) => state.costs)
   const busy = useAppSelector(selectIsBusy)
 
-  // Последний запрос списка: ответ на устаревший фильтр не нужен, его отменяем
-  const listRequest = useRef<{ abort: () => void } | null>(null)
-  const loadCosts = useCallback(() => {
-    listRequest.current?.abort()
-    listRequest.current = dispatch(fetchCosts()) // thunk сам возьмёт фильтр из Redux
-  }, [dispatch])
+  const [page, setPage] = useState(1)
+  const [applied, setApplied] = useState(filters)
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
-  // Список загружаем при открытии страницы и при входе или выходе (от авторизации зависит
-  // признак is_mine, а значит и кнопки удаления). Изменение полей фильтра список не трогает:
-  // он обновится по «Применить».
   useEffect(() => {
-    loadCosts()
-    return () => listRequest.current?.abort()
-  }, [loadCosts, isAuth])
+    const request = dispatch(fetchCosts({ page, filter: applied }))
+    return () => request.abort()
+  }, [applied, dispatch, isAuth, page])
 
   // Черновик есть только у пользователя: от него зависит счётчик на корзине
   useEffect(() => {
@@ -48,17 +42,25 @@ export const CostTypesPage: FC = () => {
 
   // Колбэки, которые передаём в CostFilter через props
   const handleChange = (next: CostFilters) => dispatch(setFilters(next)) // значения полей -> Redux
-  const handleApply = () => loadCosts()
+  const handleApply = () => {
+    setPage(1)
+    setApplied({ ...filters })
+  }
   const handleReset = () => {
     dispatch(resetFilters())
-    loadCosts()
+    setPage(1)
+    setApplied({ ...DEFAULT_FILTERS })
   }
 
   // Колбэк для CostCard: переход в ленту на выбранную карточку
   const handleCardClick = (id: number) => navigate(`${ROUTES.FEED}/${id}`)
 
   const handleDelete = (id: number) => {
-    if (window.confirm('Удалить этот вид затрат?')) dispatch(deleteCost(id))
+    if (!window.confirm('Удалить этот вид затрат?')) return
+    void dispatch(deleteCost(id)).unwrap().then(() => {
+      if (costs.length === 1 && page > 1) setPage(page - 1)
+      else setApplied((current) => ({ ...current }))
+    }).catch(() => undefined)
   }
 
   return (
@@ -86,8 +88,8 @@ export const CostTypesPage: FC = () => {
         )}
         {costs.length > 0 && (
           <>
-            <div className="costTypesCount">Найдено: {costs.length}</div>
-            <Row xs={2} className="g-3">
+            <div className="costTypesCount">Найдено: {total.toLocaleString('ru-RU')}</div>
+            <Row xs={1} sm={2} lg={3} xl={4} className="g-3">
               {costs.map((cost) => (
                 <Col key={cost.id}>
                   <CostCard
@@ -98,6 +100,11 @@ export const CostTypesPage: FC = () => {
                 </Col>
               ))}
             </Row>
+            <nav className="catalogPagination" aria-label="Страницы каталога">
+              <Button variant="outline-primary" disabled={page <= 1 || busy} onClick={() => setPage(page - 1)}>Назад</Button>
+              <span aria-live="polite">Страница {page} из {pages}</span>
+              <Button variant="outline-primary" disabled={page >= pages || busy} onClick={() => setPage(page + 1)}>Вперёд</Button>
+            </nav>
           </>
         )}
       </div>

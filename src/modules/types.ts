@@ -6,6 +6,8 @@ export interface Cost {
   short_description: string
   image_url: string
   video_url: string
+  position?: number
+  batch_size?: number
   amount_monthly: number | null
   is_fixed: boolean | null
   creator_id: number

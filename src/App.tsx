@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { prepareFeed } from './api/lab8'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from './AppLayout'
 import { ROUTES } from './Routes'
@@ -9,6 +11,12 @@ import { useAppSelector } from './store/hooks'
 
 function App() {
   const isAuth = useAppSelector((state) => state.user.isAuth)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    void prepareFeed(controller.signal).catch(() => undefined)
+    return () => controller.abort()
+  }, [isAuth])
 
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>

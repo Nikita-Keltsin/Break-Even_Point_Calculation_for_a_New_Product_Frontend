@@ -2,7 +2,7 @@ import './FeedPage.css'
 import { useEffect, useState } from 'react'
 import type { FC } from 'react'
 import { Button } from 'react-bootstrap'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation, useSearchParams } from 'react-router-dom'
 import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs'
 import { StatusBanner } from '../../components/StatusBanner/StatusBanner'
 import { DEFAULT_IMAGE, DEFAULT_VIDEO } from '../../modules/media'
@@ -19,6 +19,9 @@ const SHORT_TEXT_LENGTH = 80
 export const FeedPage: FC = () => {
   const { id } = useParams() // параметр :id из адреса (строка или undefined)
   const navigate = useNavigate()
+  const [search] = useSearchParams()
+  const next = search.get('next') === 'true'
+  const { key: navigation } = useLocation()
   const dispatch = useAppDispatch()
   const isAuth = useAppSelector((state) => state.user.isAuth)
   const cost = useAppSelector((state) => state.costs.feedCost)
@@ -32,9 +35,9 @@ export const FeedPage: FC = () => {
   // При входе и выходе тоже: от авторизации зависит is_liked.
   useEffect(() => {
     setExpanded(false)
-    const request = dispatch(fetchFeedCost({ id: id === undefined ? undefined : Number(id) }))
+    const request = dispatch(fetchFeedCost({ id: id === undefined ? undefined : Number(id), next }))
     return () => request.abort() // ушли на другую карточку раньше, чем пришёл ответ
-  }, [dispatch, id, isAuth])
+  }, [dispatch, id, isAuth, navigation, next])
 
   // Надпись «Ссылка скопирована» сама исчезает; таймер очищается при размонтировании
   useEffect(() => {
@@ -44,10 +47,8 @@ export const FeedPage: FC = () => {
   }, [copied])
 
   // «Далее» — следующая карточка, в конце ленты первая
-  const handleNext = async () => {
-    if (!cost) return
-    const result = await dispatch(fetchFeedCost({ id: cost.id, next: true })).unwrap().catch(() => null)
-    if (result?.cost) navigate(`${ROUTES.FEED}/${result.cost.id}`)
+  const handleNext = () => {
+    if (cost) navigate(`${ROUTES.FEED}/${cost.id}?next=true`)
   }
 
   const handleLike = () => {
@@ -80,7 +81,7 @@ export const FeedPage: FC = () => {
   }
 
   // Пока не пришла карточка из адреса, старую не показываем: экран закрывает анимация загрузки
-  if (!cost || (id !== undefined && cost.id !== Number(id))) {
+  if (!cost || (!next && id !== undefined && cost.id !== Number(id))) {
     return <div className="feedPage" />
   }
 
@@ -107,6 +108,7 @@ export const FeedPage: FC = () => {
           crumbs={[{ label: cost.cost_name }]}
         />
         <StatusBanner />
+        {!!cost.position && <p className="feedBatchPosition">Карточка {cost.position} из {cost.batch_size}</p>}
       </div>
 
       <div className="feedActions">

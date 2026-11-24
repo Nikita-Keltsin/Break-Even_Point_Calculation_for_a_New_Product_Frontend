@@ -1,9 +1,8 @@
-import type { ApiBreakEvenPointJSON } from '../api/Api'
+import type { CostResponse } from '../api/lab8'
 import { toProxyUrl } from './media'
 import type { Cost } from './types'
 
 // В списке приходит is_mine, в ленте — is_liked, в черновике ни того, ни другого
-type CostResponse = ApiBreakEvenPointJSON & { is_mine?: number; is_liked?: number }
 
 // Ответ веб-сервиса -> объект интерфейса: 0/1 -> boolean, адреса MinIO -> адреса через прокси.
 // Swagger описывает поля как необязательные, а часть из них у черновика равна null.
@@ -13,6 +12,8 @@ export const toCost = (dto: CostResponse): Cost => ({
   short_description: dto.short_description ?? '',
   image_url: toProxyUrl(dto.image_url ?? ''),
   video_url: toProxyUrl(dto.video_url ?? ''),
+  position: dto.position,
+  batch_size: dto.batch_size,
   amount_monthly: dto.amount_monthly ?? null,
   is_fixed: dto.is_fixed ?? null,
   creator_id: dto.creator_id ?? 0,
