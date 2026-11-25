@@ -8,7 +8,7 @@ const TOKEN_KEY = 'access_token'
 
 export const getToken = () => localStorage.getItem(TOKEN_KEY)
 
-// После входа: токен в localStorage и в сгенерированный клиент (для запросов к услугам)
+// После входа: токен в localStorage и в сгенерированный клиент (для запросов к видам затрат)
 export const saveToken = (token: string) => {
   localStorage.setItem(TOKEN_KEY, token)
   api.setSecurityData(token)
