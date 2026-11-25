@@ -75,7 +75,7 @@ const toCostsQuery = ({ kinds, minAmount, maxAmount }: CostFilters) => ({
   is_fixed: kinds.length === 1 ? (kinds[0] === 'fixed' ? (1 as const) : (0 as const)) : undefined,
 })
 
-// ===== Thunk: обращения к домену услуг через код, сгенерированный из Swagger (api.api.*) =====
+// ===== Thunk: обращения к домену видов затрат через код, сгенерированный из Swagger (api.api.*) =====
 
 // GET /api/breakeven_point — плитка с фильтром из Redux. Гость без сервиса получает mock.
 export const PAGE_SIZE = 24
@@ -156,7 +156,7 @@ export const publishCost = createCostsThunk<
   }
 })
 
-// DELETE /api/breakeven_point/:id — удаление своей услуги
+// DELETE /api/breakeven_point/:id — удаление своего вида затрат
 export const deleteCost = createCostsThunk<number, number>('costs/deleteCost', async (id, thunkApi) => {
   try {
     await api.api.breakevenPointDelete(id)

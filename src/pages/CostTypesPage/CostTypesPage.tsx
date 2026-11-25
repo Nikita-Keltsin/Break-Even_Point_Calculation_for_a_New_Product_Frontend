@@ -15,7 +15,7 @@ import { deleteCost, fetchCosts, fetchDraft, PAGE_SIZE } from '../../store/costs
 import { resetFilters, setFilters } from '../../store/filtersSlice'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 
-// Страница списка «услуг» — плитка видов затрат с фильтрами (аналог cost_types.html из ЛР1)
+// Страница списка — плитка видов затрат с фильтрами (аналог cost_types.html из ЛР1)
 export const CostTypesPage: FC = () => {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
